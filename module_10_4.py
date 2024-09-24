@@ -38,24 +38,21 @@ class Cafe:
                     break
             free_tables -= 1
 
-    def check_table(self):
-        for table in self.tables:
-            if table.guest is not None:
-                return True
-        return False
-
     def discuss_guests(self):
-        while (not self.queue.empty()) or Cafe.check_table(self):
+        while any(table.guest is not None for table in self.tables) or not self.queue.empty():
             for table in self.tables:
-                if (not table.guest is None) and (not table.guest.is_alive()):
-                    print(f'{table.guest.name} покушал(-а) и ушёл(ушла)')
-                    print(f'Стол номер {table.number} свободен')
-                    table.guest.join()
-                if (not self.queue.empty()) and table.guest is None:
-                    table.guest = self.queue.get()
-                    print(f'{table.guest.name} вышел(-ла) из очереди и сел(-а) за стол номер {table.number}')
-                    thread_1 = table.guest
-                    thread_1.start()
+                if table.guest is not None:
+                    if not table.guest.is_alive():
+                        print(f'{table.guest.name} покушал(-а) и ушёл(ушла)')
+                        print(f'Стол номер {table.number} свободен')
+                        table.guest.join()
+                        if not self.queue.empty():
+                            table.guest = self.queue.get()
+                            table.guest.start()
+                            print(f'{table.guest.name} вышел(-ла) из очереди и сел(-а) за стол номер {table.number}')
+                        else:
+                            table.guest = None
+                sleep(0.1)
 
 
 # Создание столов
